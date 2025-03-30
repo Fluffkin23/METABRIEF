@@ -5,21 +5,23 @@ on:
     branches:
       - "**"
     types: [opened, synchronize]
+
 jobs:
   test:
-    run-on : ubuntu-latest
+    runs-on: ubuntu-latest  # ✅ FIXED: was 'run-on' (typo)
     container:
       image: node:20
+
     steps:
       - uses: actions/checkout@v3
 
-      - name : Install dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name : Build the project
+      - name: Build the project
         run: npm run build
 
-      - name : Unit tests
+      - name: Unit tests
         run: npm test
 
       - name: Scan project with Trivy
@@ -27,4 +29,4 @@ jobs:
         with:
           scan-type: fs
           ignore-unfixed: true
-          severity: CRITICAL, HIGH, MEDIUM,LOW
+          severity: CRITICAL,HIGH,MEDIUM,LOW  # ✅ FIXED: removed space before "Check failure"
