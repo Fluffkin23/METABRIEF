@@ -10,7 +10,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  CI/CD_pipeline:
+  pipeline:
     runs-on: ubuntu-latest  # ✅ FIXED: was 'run-on' (typo)
     container:
       image: node:20
