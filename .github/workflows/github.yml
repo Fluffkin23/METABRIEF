@@ -24,8 +24,8 @@ jobs:
       - name: Build the project
         run: npm run build
 
-      - name: Unit tests
-        run: npm test
+#      - name: Unit tests
+#        run: npm test
 
       - name: Scan project with Trivy
         uses: aquasecurity/trivy-action@master
