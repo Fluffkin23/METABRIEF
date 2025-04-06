@@ -5,9 +5,9 @@ import { api, HydrateClient } from "~/trpc/server";
 import SignInPage from "./sign-in/[[...sign-in]]/page";
 
 export default async function Home() {
-  // const hello = await api.post.hello({ text: "from tRPC" });
+  const hello = await api.post.hello({ text: "from tRPC" });
 
-  // void api.post.getLatest.prefetch();
+  void api.post.getLatest.prefetch();
 
   return (
     <HydrateClient>
