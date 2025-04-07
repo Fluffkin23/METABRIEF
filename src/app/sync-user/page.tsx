@@ -1,9 +1,8 @@
 import { auth, clerkClient } from "@clerk/nextjs/server" 
 import { notFound, redirect } from "next/navigation" 
-import { db } from "~/server/db" 
+import { db } from "~/server/db"
 
-const SyncUser = async () => {
-    // Get the user ID from the authentication
+export default async function SyncUserPage() {    // Get the user ID from the authentication
     const { userId } = await auth() 
     // Check if userId exists
     if (!userId) {
@@ -44,5 +43,3 @@ const SyncUser = async () => {
     // Redirect the user to the dashboard after syncing
     return redirect("/dashboard")
 }
- // Export the SyncUser function for use in other parts of the app
-export default SyncUser

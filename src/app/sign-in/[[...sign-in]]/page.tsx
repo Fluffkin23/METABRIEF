@@ -1,8 +1,11 @@
 "use client"
 import * as Clerk from '@clerk/elements/common';
 import * as SignIn from '@clerk/elements/sign-in';
+import { useClerk } from '@clerk/nextjs';
+import { useEffect, useState } from 'react';
 
 export default function SignInPage() {
+  
   return (
     <div className="grid w-full flex-grow items-center bg-white px-4 sm:justify-center">
       <SignIn.Root>
