@@ -21,3 +21,19 @@ model User {
 
     emailAddress String @unique
 }
+
+model Project {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  name      String
+  githubUrl String
+  deletedAt DateTime?
+
+  userToProject        UserToProject[]
+  commits              Commit[]
+  sourceCodeEmbeddings SourceCodeEmbedding[]
+
+  savedQuestions Question[]
+  meetings       Meeting[]
+}
