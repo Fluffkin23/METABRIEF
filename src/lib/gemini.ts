@@ -9,10 +9,9 @@ const model = genAI.getGenerativeModel({
 });
 
 // Function to summarize a git diff using the generative AI model
-export const summariseCommit = async (diff: string) => {
+export const aisummariseCommit = async (diff: string) => {
   // Generate a summary of the provided git diff by sending a prompt to the model
   const response = await model.generateContent([
-    // Instructional prompt for the AI model to understand the context and format of a git diff
     `You are an expert programmer, and you are trying to summarize a git diff.
   Reminders about the git diff format:
   For every file, there are a few metadata lines, like (for example):
@@ -47,39 +46,41 @@ export const summariseCommit = async (diff: string) => {
   return response.response.text();
 };
 
-// Example diff content to be summarized
-const diffContent = `
-diff --git a/MauiStellarCThreading/ViewModel/HoroscopeViewModel.cs b/MauiStellarCThreading/ViewModel/HoroscopeViewModel.cs
-index 17cd9cd..b25603c 100644
---- a/MauiStellarCThreading/ViewModel/HoroscopeViewModel.cs
-+++ b/MauiStellarCThreading/ViewModel/HoroscopeViewModel.cs
-@@ -127,7 +127,7 @@ protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-         }
- 
-         // Method to navigate back to the previous view.
--        private async Task goBack()
-+         private async Task goBack()
-         {
-             try
-             {
-diff --git a/MauiStellarCThreading/Views/HoroscopePageView.xaml.cs b/MauiStellarCThreading/Views/HoroscopePageView.xaml.cs
-index b252050..76e11be 100644
---- a/MauiStellarCThreading/Views/HoroscopePageView.xaml.cs
-+++ b/MauiStellarCThreading/Views/HoroscopePageView.xaml.cs
-@@ -5,5 +5,11 @@ public partial class HoroscopePageView : ContentPage
-     public HoroscopePageView()
-     {
-         InitializeComponent();
--	}
-+
-+        // Initialize the ViewModel
-+        _viewModel = new HoroscopeViewModel();
-+
-+        // Set the binding context of the page to the ViewModel
-+        this.BindingContext = _viewModel;
-+    }
- }
-\ No newline at end of file
-`;
 
-console.log(await summariseCommit(diffContent));
+
+// // Example diff content to be summarized
+// const diffContent = `
+// diff --git a/MauiStellarCThreading/ViewModel/HoroscopeViewModel.cs b/MauiStellarCThreading/ViewModel/HoroscopeViewModel.cs
+// index 17cd9cd..b25603c 100644
+// --- a/MauiStellarCThreading/ViewModel/HoroscopeViewModel.cs
+// +++ b/MauiStellarCThreading/ViewModel/HoroscopeViewModel.cs
+// @@ -127,7 +127,7 @@ protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+//          }
+ 
+//          // Method to navigate back to the previous view.
+// -        private async Task goBack()
+// +         private async Task goBack()
+//          {
+//              try
+//              {
+// diff --git a/MauiStellarCThreading/Views/HoroscopePageView.xaml.cs b/MauiStellarCThreading/Views/HoroscopePageView.xaml.cs
+// index b252050..76e11be 100644
+// --- a/MauiStellarCThreading/Views/HoroscopePageView.xaml.cs
+// +++ b/MauiStellarCThreading/Views/HoroscopePageView.xaml.cs
+// @@ -5,5 +5,11 @@ public partial class HoroscopePageView : ContentPage
+//      public HoroscopePageView()
+//      {
+//          InitializeComponent();
+// -	}
+// +
+// +        // Initialize the ViewModel
+// +        _viewModel = new HoroscopeViewModel();
+// +
+// +        // Set the binding context of the page to the ViewModel
+// +        this.BindingContext = _viewModel;
+// +    }
+//  }
+// \ No newline at end of file
+// `;
+
+// console.log(await summariseCommit(diffContent));

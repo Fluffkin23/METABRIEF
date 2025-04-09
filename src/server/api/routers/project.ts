@@ -4,6 +4,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { z } from "zod";
+import { pollCommits } from "~/lib/github";
 
 // Create a router for project-related API endpoints
 export const projectRouter = createTRPCRouter({
@@ -29,6 +30,7 @@ export const projectRouter = createTRPCRouter({
           },
         },
       });
+      await pollCommits(project.id);
       return project; // Return the created project
     }),
   
