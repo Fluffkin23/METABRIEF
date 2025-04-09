@@ -30,6 +30,7 @@ export const projectRouter = createTRPCRouter({
           },
         },
       });
+      // Poll the commits for the newly created project using its ID
       await pollCommits(project.id);
       return project; // Return the created project
     }),

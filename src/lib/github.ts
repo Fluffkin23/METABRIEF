@@ -62,16 +62,30 @@ export const pollCommits = async (projectId: string) => {
   // Filtering out already processed commits
   const unprocessedCommits = await filterUnprocessedCommits(projectId,commitHashes,);
 
-  const summaryResponse = await Promise.allSettled(unprocessedCommits.map(commit =>{ return summariesCommit(githubUrl, commit.commitHash)}))
-  const summaries = summaryResponse.map(response =>{
-    if(response.status === "fulfilled"){
-      return response.value
+  // Process each unprocessed commit to generate summaries
+  const summaryResponse = await Promise.allSettled(
+    unprocessedCommits.map(commit => {
+      // Generate a summary for each commit using the summariesCommit function
+      return summariesCommit(githubUrl, commit.commitHash);
+    })
+  );
+
+  // Extract summaries from the settled promises
+  const summaries = summaryResponse.map(response => {
+    // If the promise was fulfilled, use the summary value
+    if (response.status === "fulfilled") {
+      return response.value;
     }
-    return ""
-  })
+    // If the promise was rejected, return an empty string as a placeholder
+    return "";
+  });
+
+  // Create new commit entries in the database with the generated summaries
   const commits = await db.commit.createMany({
     data: summaries.map((summary, index) => {
-      console.log(`processing commit ${index}` )
+      // Log the processing of each commit for debugging purposes
+      console.log(`Processing commit at index ${index}`);
+      // Return the commit data structure with all necessary details
       return {
         projectId: projectId,
         commitHash: unprocessedCommits[index]!.commitHash,
@@ -79,11 +93,11 @@ export const pollCommits = async (projectId: string) => {
         commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
         commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
         commitDate: unprocessedCommits[index]!.commitDate,
-        summary
-      }
-    })
-  })
-
+        summary, // Include the generated summary
+      };
+    }),
+  });
+  // Return the created commit entries
   return commits;
 }
 
