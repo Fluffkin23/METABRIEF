@@ -16,11 +16,19 @@ type Response = {
 
 export const getCommitHashes = async (githubUrl: string): Promise<Response[]> => {
   const  {data} = await octokit.rest.repos.listCommits({
-    owner: "docker",
-    repo: "docker",
+    owner: "Fluffkin23",
+    repo: "MauiStellarCThreading",
   });
-  console.log(data);
+  const sortedCommits = data.sort((a:any, b:any) => new Date(b.commit.author.date).getTime() - new Date(a.commit.author.date).getTime()) as any[];
+
+  return sortedCommits.slice(0, 10).map((commit) => ({
+    commitHash: commit.sha,
+    commitMessage: commit.commit.message ?? "",
+    commitAuthorName: commit.author.login ?? "",
+    commitAuthorAvatar: commit?.author.avatar_url ?? "",
+    commitDate: commit.commit?.author.date ?? "",
+  }));
 };
 
 // console.log("Hello log");
-getCommitHashes(githubUrl);
+console.log(await getCommitHashes(githubUrl));
