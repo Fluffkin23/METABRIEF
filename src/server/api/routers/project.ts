@@ -44,4 +44,11 @@ export const projectRouter = createTRPCRouter({
       },
     });
   }),
+  // Procedure to retrieve commits for a specific project based on project ID
+  getCommits: protectedProcedure.input(z.object({projectId: z.string(),})).query(async ({ ctx, input }) => {
+    // Fetching commits from the database where the project ID matches the input
+    return await ctx.db.commit.findMany({
+      where: { projectId: input.projectId },
+    });
+  }),
 });

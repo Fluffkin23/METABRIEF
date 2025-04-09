@@ -2,7 +2,7 @@
 import useProject from "~/hooks/use-project";
 import { Github, ExternalLink } from "lucide-react";
 import Link from "next/link";
-
+import CommitLog from "./commit-log";
 const Dashboard = () => {
   // Destructure the project object from the useProject hook
   const { project } = useProject();
@@ -45,7 +45,8 @@ const Dashboard = () => {
       </div>
       {/* Container for the bottom section of the dashboard */}
       <div className="mt-8">
-        CommitLog {/* Placeholder for the commit log */}
+        {/* CommitLog Placeholder for the commit log */}
+        <CommitLog />
       </div>
     </div>
   );

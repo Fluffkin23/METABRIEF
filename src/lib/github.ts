@@ -2,6 +2,7 @@ import axios from "axios";
 import { Octokit } from "octokit"; // Importing the Octokit library to interact with the GitHub API
 import { db } from "~/server/db"; // Importing the database instance for querying the database
 import { aisummariseCommit } from "./gemini";
+import { aisummariseCommitOllama } from "./ollama";
 import { headers } from "next/headers";
 
 // Initializing the Octokit instance with the GitHub token for authentication
