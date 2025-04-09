@@ -10,8 +10,6 @@ const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
 
-// Example GitHub repository URL
-const githubUrl = "https://github.com/Fluffkin23/MauiStellarCThreading";
 
 // Type definition for the response structure of commit data
 type Response = {
