@@ -21,7 +21,6 @@ export default function RootLayout({ children,}: Readonly<{ children: React.Reac
     <html lang="en" className={`${geist.variable}`}>
       <body>
           <TRPCReactProvider>{children}</TRPCReactProvider>
-          // The Toaster component is used to display toast notifications with rich colors.
           <Toaster richColors></Toaster>
         </body>
       </html>

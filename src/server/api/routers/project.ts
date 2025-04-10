@@ -4,6 +4,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { z } from "zod";
+import { pollCommits } from "~/lib/github";
 
 // Create a router for project-related API endpoints
 export const projectRouter = createTRPCRouter({
@@ -29,6 +30,8 @@ export const projectRouter = createTRPCRouter({
           },
         },
       });
+      // Poll the commits for the newly created project using its ID
+      await pollCommits(project.id);
       return project; // Return the created project
     }),
   
@@ -39,6 +42,14 @@ export const projectRouter = createTRPCRouter({
         userToProject: { some: { userId: ctx.user.userId! } }, // Filter projects by user ID
         deletedAt: null, // Exclude deleted projects
       },
+    });
+  }),
+  // Procedure to retrieve commits for a specific project based on project ID
+  getCommits: protectedProcedure.input(z.object({projectId: z.string(),})).query(async ({ ctx, input })  => {
+    // Fetching commits from the database where the project ID matches the input
+    pollCommits(input.projectId).then().catch(console.error);
+    return await ctx.db.commit.findMany({
+      where: { projectId: input.projectId },
     });
   }),
 });
