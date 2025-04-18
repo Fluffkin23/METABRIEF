@@ -23,24 +23,33 @@ async function streamOllamaResponse(prompt: string, stream: any) {
 
   const reader = response.body.getReader();
   const decoder = new TextDecoder("utf-8");
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    const chunk = decoder.decode(value, { stream: true });
-    for (const line of chunk.split("\n")) {
-      if (line.trim()) {
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+
+      for (const line of chunk.split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+
         try {
-          const parsed = JSON.parse(line);
+          const parsed = JSON.parse(trimmed);
           if (parsed.response) {
             stream.update(parsed.response);
           }
         } catch (e) {
-          throw new Error("Error parsing response from Ollama");
+          console.warn("⚠️ Failed to parse line from Ollama:", trimmed);
+          // Instead of throwing, just skip the line
         }
       }
     }
+  } catch (err) {
+    console.error("❌ Error reading Ollama stream:", err);
+  } finally {
+    stream.done();
   }
-  stream.done();
 }
 
 export async function askQuestion(question: string, projectId: string) {
