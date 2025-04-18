@@ -1,15 +1,12 @@
 import axios from "axios";
 import { Octokit } from "octokit"; // Importing the Octokit library to interact with the GitHub API
 import { db } from "~/server/db"; // Importing the database instance for querying the database
-import { aisummariseCommit } from "./gemini";
 import { aisummariseCommitOllama } from "./ollama";
-import { headers } from "next/headers";
 
 // Initializing the Octokit instance with the GitHub token for authentication
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
 });
-
 
 // Type definition for the response structure of commit data
 type Response = {
@@ -59,18 +56,21 @@ export const pollCommits = async (projectId: string) => {
   // Fetching the latest commit hashes from the GitHub repository
   const commitHashes = await getCommitHashes(githubUrl);
   // Filtering out already processed commits
-  const unprocessedCommits = await filterUnprocessedCommits(projectId,commitHashes,);
+  const unprocessedCommits = await filterUnprocessedCommits(
+    projectId,
+    commitHashes,
+  );
 
   // Process each unprocessed commit to generate summaries
   const summaryResponse = await Promise.allSettled(
-    unprocessedCommits.map(commit => {
+    unprocessedCommits.map((commit) => {
       // Generate a summary for each commit using the summariesCommit function
       return summariesCommit(githubUrl, commit.commitHash);
-    })
+    }),
   );
 
   // Extract summaries from the settled promises
-  const summaries = summaryResponse.map(response => {
+  const summaries = summaryResponse.map((response) => {
     // If the promise was fulfilled, use the summary value
     if (response.status === "fulfilled") {
       return response.value;
@@ -80,7 +80,8 @@ export const pollCommits = async (projectId: string) => {
   });
 
   // Create new commit entries in the database with the generated summaries
-  const commits = await db.commit.createMany({
+  // Return the created commit entries
+  return db.commit.createMany({
     data: summaries.map((summary, index) => {
       // Log the processing of each commit for debugging purposes
       console.log(`Processing commit at index ${index}`);
@@ -96,9 +97,7 @@ export const pollCommits = async (projectId: string) => {
       };
     }),
   });
-  // Return the created commit entries
-  return commits;
-}
+};
 
 // Helper function to fetch the GitHub URL of a project from the database
 async function fetchProjectGithubUrl(projectId: string) {
@@ -122,7 +121,7 @@ async function summariesCommit(githubUrl: string, commitHash: string) {
       Accept: "application/vnd.github.v3.diff",
     },
   });
-  return await aisummariseCommit(data) || "";
+  return (await aisummariseCommitOllama(data)) || "";
 }
 
 // Helper function to filter out already processed commits
@@ -130,20 +129,17 @@ async function filterUnprocessedCommits(
   projectId: string,
   commitHashes: Response[],
 ) {
-  // Fetching the list of processed commits for the project from the database
   const processedCommit = await db.commit.findMany({
     where: { projectId },
   });
 
   // Filtering out commits that have already been processed
-  const unprocessedCommits = commitHashes.filter(
+  return commitHashes.filter(
     (commit) =>
       !processedCommit.some(
         (processedCommit) => processedCommit.commitHash === commit.commitHash,
       ),
   );
-
-  return unprocessedCommits;
 }
 
 // Example usage of the pollCommits function with a sample project ID
