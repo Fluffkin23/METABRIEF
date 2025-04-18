@@ -19,9 +19,7 @@ export const CodeReferences = ({ filesReferences }: Props) => {
       <Tabs value={tab} onValueChange={setTab}>
         <div className="flex gap-2 overflow-scroll rounded-md bg-gray-200 p-1">
           {filesReferences.map((file) => (
-            <button
-              key={file.fileName}
-              className={cn(
+            <button onClick={() =>setTab(file.fileName)} key={file.fileName} className={cn(
                 "text-muted-foreground hover:bg-muted rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
                 {
                   "bg-primary text-primary-foreground": tab === file.fileName,
