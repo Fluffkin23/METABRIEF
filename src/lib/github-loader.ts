@@ -21,7 +21,7 @@ import { db } from "~/server/db";
  */
 export const loadGithubRepo = async(githubUrl: string, githubToken?: string) => {
     const loader = new GithubRepoLoader(githubUrl, {
-        accessToken: githubToken || "",
+        accessToken: githubToken || process.env.GITHUB_TOKEN,
         branch: "main",
         ignoreFiles: ["package-lock.json", "yarn.lock", "pnpm-lock.yaml", "bun.lockb"],
         recursive: true,
@@ -75,6 +75,7 @@ export const indexGithubRepo = async(projectId: string, githubUrl: string, githu
         WHERE "id" = ${sourceCodeEmbedding.id}
         `
     }))
+    console.log("Embeddings project stored successfully!");
 }
 
 /**
@@ -96,14 +97,36 @@ export const indexGithubRepo = async(projectId: string, githubUrl: string, githu
  * @returns Promise that resolves to an array of processed document objects
  */
 const generateEmbeddings = async(docs: Document[]) => {
-    return await Promise.all(docs.map(async (doc) => {
-        const summary = await summariseCode(doc);
-        const embedding = await generateEmbeddingOllama(summary);
-        return {
-            summary,
-            embedding,
-            sourceCode : JSON.parse(JSON.stringify(doc.pageContent)),
-            fileName : doc.metadata.source,
+    const total = docs.length;
+    let completedCount = 0;
+
+    console.log(`📦 Starting embedding for ${total} documents...\n`);
+
+    const updateProgress = () => {
+        completedCount++;
+        const percent = ((completedCount / total) * 100).toFixed(1);
+        const barLength = 20;
+        const filledLength = Math.round((completedCount / total) * barLength);
+        const bar = "█".repeat(filledLength) + "-".repeat(barLength - filledLength);
+        process.stdout.write(`\r📊 Progress: [${bar}] ${completedCount}/${total} (${percent}%)`);
+    };
+
+    return await Promise.all(docs.map(async (doc,index) => {
+        const fileName = doc.metadata.source ?? "unknown file";
+        console.log(`🚀 [${index + 1}/${docs.length}] Generating embedding for: ${fileName}`);
+        try{
+            const summary = await summariseCode(doc);
+            const embedding = await generateEmbeddingOllama(summary);
+            updateProgress();
+            return {
+                summary,
+                embedding,
+                sourceCode : JSON.parse(JSON.stringify(doc.pageContent)),
+                fileName : doc.metadata.source,
+            }
+        }catch (error) {
+            console.error(`❌ [${index + 1}/${docs.length}] Failed: ${fileName}`, error);
+            return null; // You can also throw here if you want to fail-fast
         }
     }));
 }
