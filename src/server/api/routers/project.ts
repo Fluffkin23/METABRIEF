@@ -6,6 +6,8 @@ import {
 import { z } from "zod";
 import { pollCommits } from "~/lib/github";
 import { indexGithubRepo } from "~/lib/github-loader";
+import { pollCommitsGitlab } from "~/lib/gitlab";
+import {indexGitlabRepo} from "~/lib/gitlab-loader";
 
 // Create a router for project-related API endpoints
 export const projectRouter = createTRPCRouter({
@@ -31,10 +33,17 @@ export const projectRouter = createTRPCRouter({
           },
         },
       });
-      await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
-      // Poll the commits for the newly created project using its ID
-      await pollCommits(project.id);
-      return project; // Return the created project
+      if(input.githubUrl.includes("gitlab.com") || input.githubUrl.includes("gitlab.metaminds.com")) {
+        console.log("Detected GitLab repository");
+        await indexGitlabRepo(project.id, input.githubUrl, input.githubToken)
+        await pollCommitsGitlab(project.id);
+      }else if (input.githubUrl.includes("github.com")) {
+        console.log("Detected GitHub repository");
+        await indexGithubRepo(project.id, input.githubUrl, input.githubToken)
+        await pollCommits(project.id);
+      }
+      // Return the created project
+      return project;
     }),
   
   // Procedure to retrieve all projects for the authenticated user

@@ -1,6 +1,6 @@
 import { Gitlab } from "@gitbeaker/node";
 import { db } from "~/server/db";
-import { aisummariseCommit } from "~/lib/gemini";
+import {aisummariseCommitOllama} from "~/lib/ollama";
 
 // Initialize GitLab client with a personal access token and custom base URL
 export const gitlab = new Gitlab({
@@ -160,7 +160,7 @@ async function summariesCommit(gitlabUrl: string, commitHash: string) {
       `Transformed unified diff for commit ${commitHash}:`,
       unifiedDiff,
     );
-    return (await aisummariseCommit(unifiedDiff)) || "";
+    return (await aisummariseCommitOllama(unifiedDiff)) || "";
   } catch (error) {
     console.error(`Error fetching diff for commit ${commitHash}:`, error);
     throw new Error(`Failed to fetch diff for commit ${commitHash}`);
