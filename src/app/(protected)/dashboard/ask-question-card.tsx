@@ -40,19 +40,29 @@ const AskQuestionCard = () => {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[80vw]">
+        <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-[80vw]">
           <DialogHeader>
             <DialogTitle>
               <Image src="/logo.png" alt="logo" width={40} height={40} />
             </DialogTitle>
           </DialogHeader>
-          <MDEditor.Markdown  source = {answer} className="max-w-[70w] !h-full max-h-[40vh] overflow-scroll"   style={{ backgroundColor: "white", color: "black" }}/>
-          <div className="h-4"></div>
-          <CodeReferences filesReferences={fileReferences} />
-          <Button type="button" onClick={() => {setOpen(false)}}> Close </Button>
 
+          <div className="max-h-[50vh] overflow-auto rounded-md border bg-white p-4 text-black shadow-inner">
+            <MDEditor.Markdown
+                source={answer}
+                style={{ backgroundColor: "transparent", color: "inherit" }}
+            />
+          </div>
+
+          <div className="h-4" />
+          <CodeReferences filesReferences={fileReferences} />
+
+          <div className="mt-4 flex justify-end">
+            <Button type="button" onClick={() => setOpen(false)}>Close</Button>
+          </div>
         </DialogContent>
       </Dialog>
+
 
       <Card className="relative col-span-3">
         <CardHeader>
