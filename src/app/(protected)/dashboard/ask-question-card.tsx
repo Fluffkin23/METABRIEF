@@ -14,19 +14,17 @@ import {
 import Image from "next/image";
 import { askQuestion } from "./action";
 import { readStreamableValue } from "ai/rsc";
-import { set } from "date-fns";
 
 const AskQuestionCard = () => {
   const { project } = useProject();
-  const [question, setQuestion] = useState("");
   const [open, setOpen] = useState(false);
+  const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
-  const [fileReferences, setFileReferences] = useState<
-    { fileName: string; sourceCode: string; summary: string }[]
-  >([]);
+  const [fileReferences, setFileReferences] = useState<{ fileName: string; sourceCode: string; summary: string }[]>([]);
   const [answer, setAnswer] = useState("");
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (!project?.id) return;
     setLoading(true);
     setOpen(true);
