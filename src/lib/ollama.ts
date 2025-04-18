@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { Document } from 'langchain/document';
+import axios from "axios";
+import { Document } from "langchain/document";
 
 // Function to summarize a git diff using the Ollama API
 export const aisummariseCommitOllama = async (diff: string) => {
@@ -38,59 +38,62 @@ It is given only as an example of appropriate comments.
 Please summarise the following diff file: \n\n${diff}
 `;
 
-const requestFn = async () => {
-  const response = await axios.post('http://192.168.1.135:11434/api/generate', {
-    model: 'gemma3:4b',
-    prompt,
-    stream: false
-  });
+  const requestFn = async () => {
+    const response = await axios.post(
+      "http://192.168.1.135:11434/api/generate",
+      {
+        model: "gemma3:4b",
+        prompt,
+        stream: false,
+      },
+    );
 
-  if (response.status !== 200 || response.data.error) {
-    throw new Error(response.data.error || 'Unexpected response');
-  }
+    if (response.status !== 200 || response.data.error) {
+      throw new Error(response.data.error || "Unexpected response");
+    }
 
-  return response.data.response;
-};
-
-return await retryWithBackoff(requestFn, 5, 1000); // max 5 retries, starting with 1s
+    return response.data.response;
+  };
+  return await retryWithBackoff(requestFn, 5, 1000); // max 5 retries, starting with 1s
 };
 
 export async function summariseCode(doc: Document) {
   console.log("getting summary for", doc.metadata.source);
-
   const code = doc.pageContent.slice(0, 1000); // limit to 1000 characters
 
   const prompt = `You are an intelligent senior software engineer who specialises in onboarding junior software engineers onto projects.
-You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file.
-Here is the code:
----
-${code}
----
-Give a summary no more than 100 words of the code above.`;
+  You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file.
+  Here is the code:
+  ---
+  ${code}
+  ---
+  Give a summary no more than 100 words of the code above.`;
 
-  const response = await axios.post('http://192.168.1.135:11434/api/generate', {
-    model: 'gemma3:4b', // adjust to the actual model you're using
+  const response = await axios.post("http://192.168.1.135:11434/api/generate", {
+    model: "gemma3:4b", // adjust to the actual model you're using
     prompt: prompt,
-    stream: false
+    stream: false,
   });
 
   return response.data.response;
 }
 
 export async function generateEmbeddingOllama(text: string) {
-  const response = await axios.post('http://192.168.1.135:11434/api/embeddings', {
-    model: 'nomic-embed-text:latest',
-    prompt: text
-  });
+  const response = await axios.post(
+    "http://192.168.1.135:11434/api/embeddings",
+    {
+      model: "nomic-embed-text:latest",
+      prompt: text,
+    },
+  );
 
-  return response.data.embedding; 
+  return response.data.embedding;
 }
-
 
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   maxRetries = 5,
-  delay = 1000
+  delay = 1000,
 ): Promise<T> {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
@@ -105,7 +108,7 @@ async function retryWithBackoff<T>(
       }
     }
   }
-  throw new Error('Failed after max retries');
+  throw new Error("Failed after max retries");
 }
 
 
@@ -120,7 +123,7 @@ async function retryWithBackoff<T>(
 // +++ b/MauiStellarCThreading/ViewModel/HoroscopeViewModel.cs
 // @@ -127,7 +127,7 @@ protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 //          }
- 
+
 //          // Method to navigate back to the previous view.
 // -        private async Task goBack()
 // +         private async Task goBack()
