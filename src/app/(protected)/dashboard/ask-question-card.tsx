@@ -1,19 +1,15 @@
 "use client";
-
 import useProject from "~/hooks/use-project";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "~/components/ui/dialog";
+import {Dialog, DialogContent, DialogHeader, DialogTitle} from "~/components/ui/dialog";
 import Image from "next/image";
 import { askQuestion } from "./action";
 import { readStreamableValue } from "ai/rsc";
+import MDEditor from "@uiw/react-md-editor";
+import {CodeReferences} from "~/app/(protected)/dashboard/code-references";
 
 const AskQuestionCard = () => {
   const { project } = useProject();
@@ -24,12 +20,14 @@ const AskQuestionCard = () => {
   const [answer, setAnswer] = useState("");
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    setAnswer("");
+    setFileReferences([]);
     e.preventDefault();
     if (!project?.id) return;
     setLoading(true);
-    setOpen(true);
 
     const { output, fileReferences } = await askQuestion(question, project.id);
+    setOpen(true);
     setFileReferences(fileReferences);
     for await (const delta of readStreamableValue(output)) {
       if (delta) {
@@ -42,17 +40,17 @@ const AskQuestionCard = () => {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[80vw]">
           <DialogHeader>
             <DialogTitle>
               <Image src="/logo.png" alt="logo" width={40} height={40} />
             </DialogTitle>
           </DialogHeader>
-          {answer}
-          <h1>Files Referenced</h1>
-          {fileReferences.map((file) => {
-            return <span key={file.fileName}>{file.fileName}</span>;
-          })}
+          <MDEditor.Markdown  source = {answer} className="max-w-[70w] !h-full max-h-[40vh] overflow-scroll"   style={{ backgroundColor: "white", color: "black" }}/>
+          <div className="h-4"></div>
+          <CodeReferences filesReferences={fileReferences} />
+          <Button type="button" onClick={() => {setOpen(false)}}> Close </Button>
+
         </DialogContent>
       </Dialog>
 
@@ -68,7 +66,7 @@ const AskQuestionCard = () => {
               onChange={(e) => setQuestion(e.target.value)}
             />
             <div className="h-4"></div>
-            <Button type="submit"> Ask METABRIEF </Button>
+            <Button type="submit" disabled={loading}> Ask METABRIEF </Button>
           </form>
         </CardContent>
       </Card>
