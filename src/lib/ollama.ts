@@ -39,7 +39,7 @@ Please summarise the following diff file: \n\n${diff}
 `;
 
 const requestFn = async () => {
-  const response = await axios.post('http://192.168.1.134:11434/api/generate', {
+  const response = await axios.post('http://192.168.1.135:11434/api/generate', {
     model: 'gemma3:4b',
     prompt,
     stream: false
@@ -68,7 +68,7 @@ ${code}
 ---
 Give a summary no more than 100 words of the code above.`;
 
-  const response = await axios.post('http://192.168.1.134:11434/api/generate', {
+  const response = await axios.post('http://192.168.1.135:11434/api/generate', {
     model: 'gemma3:4b', // adjust to the actual model you're using
     prompt: prompt,
     stream: false
@@ -78,7 +78,7 @@ Give a summary no more than 100 words of the code above.`;
 }
 
 export async function generateEmbeddingOllama(text: string) {
-  const response = await axios.post('http://192.168.1.134:11434/api/embeddings', {
+  const response = await axios.post('http://192.168.1.135:11434/api/embeddings', {
     model: 'nomic-embed-text:latest',
     prompt: text
   });

@@ -12,15 +12,33 @@ import {
   DialogTitle,
 } from "~/components/ui/dialog";
 import Image from "next/image";
+import { askQuestion } from "./action";
+import { readStreamableValue } from "ai/rsc";
+import { set } from "date-fns";
 
 const AskQuestionCard = () => {
   const { project } = useProject();
   const [question, setQuestion] = useState("");
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [fileReferences, setFileReferences] = useState<
+    { fileName: string; sourceCode: string; summary: string }[]
+  >([]);
+  const [answer, setAnswer] = useState("");
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    if (!project?.id) return;
+    setLoading(true);
     setOpen(true);
+
+    const { output, fileReferences } = await askQuestion(question, project.id);
+    setFileReferences(fileReferences);
+    for await (const delta of readStreamableValue(output)) {
+      if (delta) {
+        setAnswer((ans) => ans + delta);
+      }
+    }
+    setLoading(false);
   };
 
   return (
@@ -32,6 +50,11 @@ const AskQuestionCard = () => {
               <Image src="/logo.png" alt="logo" width={40} height={40} />
             </DialogTitle>
           </DialogHeader>
+          {answer}
+          <h1>Files Referenced</h1>
+          {fileReferences.map((file) => {
+            return <span key={file.fileName}>{file.fileName}</span>;
+          })}
         </DialogContent>
       </Dialog>
 
