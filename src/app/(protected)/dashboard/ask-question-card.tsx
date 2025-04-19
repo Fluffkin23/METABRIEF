@@ -10,6 +10,8 @@ import { askQuestion } from "./action";
 import { readStreamableValue } from "ai/rsc";
 import MDEditor from "@uiw/react-md-editor";
 import {CodeReferences} from "~/app/(protected)/dashboard/code-references";
+import {api} from "~/trpc/react";
+import {toast} from "sonner";
 
 const AskQuestionCard = () => {
   const { project } = useProject();
@@ -18,6 +20,7 @@ const AskQuestionCard = () => {
   const [loading, setLoading] = useState(false);
   const [fileReferences, setFileReferences] = useState<{ fileName: string; sourceCode: string; summary: string }[]>([]);
   const [answer, setAnswer] = useState("");
+  const saveAnswer = api.project.saveAnswer.useMutation();
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setAnswer("");
@@ -27,8 +30,9 @@ const AskQuestionCard = () => {
     setLoading(true);
 
     const { output, fileReferences } = await askQuestion(question, project.id);
-    setOpen(true);
     setFileReferences(fileReferences);
+    setOpen(true);
+
     for await (const delta of readStreamableValue(output)) {
       if (delta) {
         setAnswer((ans) => ans + delta);
@@ -36,15 +40,28 @@ const AskQuestionCard = () => {
     }
     setLoading(false);
   };
-
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-[80vw]">
           <DialogHeader>
-            <DialogTitle>
-              <Image src="/logo.png" alt="logo" width={40} height={40} />
-            </DialogTitle>
+            <div className="flex items-center gap-2">
+              <DialogTitle>
+                <Image src="/logo.png" alt="logo" width={40} height={40} />
+              </DialogTitle>
+              <Button  disabled={saveAnswer.isPending} variant={"outline"} onClick={() => {saveAnswer.mutate({projectId: project!.id, question, answer, fileReferences},
+                  {
+                  onSuccess: () => {
+                    toast.success("Answer saved successfully");
+                  },
+                    onError: () => {
+                        toast.error("Failed to save answer");
+                    }
+                })
+              }}>
+                Save Answer
+              </Button>
+            </div>
           </DialogHeader>
 
           <div className="max-h-[50vh] overflow-auto rounded-md border bg-white p-4 text-black shadow-inner">
