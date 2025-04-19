@@ -31,7 +31,7 @@ export async function uploadFile(file: File, setProgress?: (progress: number) =>
     // Send the command to MinIO
     await s3.send(command);
     // Return the URL of the uploaded file
-    return `http://localhost:9000/${bucketName}/${fileName}`;
+    return `http://localhost:9000/${bucketName}/${fileName}`as string;
   } catch (error) {
     // Log and throw any errors
     console.error("Error uploading file:", error);
