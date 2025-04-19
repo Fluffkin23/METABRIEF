@@ -9,7 +9,6 @@ const Dashboard = () => {
   const { project } = useProject();
   return (
     <div>
-      {project?.id}
       {/* Container for the top section of the dashboard */}
       <div className="flex flex-wrap items-center justify-between gap-4 gap-y-4">
         {/* Display the GitHub link associated with the project */}
