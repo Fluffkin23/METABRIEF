@@ -1,12 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import {
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytesResumable,
-} from "firebase/storage";
+import { getDownloadURL, getStorage, ref, uploadBytesResumable, } from "firebase/storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -27,10 +22,7 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 export const storage = getStorage(app);
 
-export async function uploadFile(
-  file: File,
-  setProgress?: (progress: number) => void,
-) {
+export async function uploadFile(file: File, setProgress?: (progress: number) => void) {
   return new Promise((resolve, reject) => {
     try {
       const storageRef = ref(storage, file.name);
