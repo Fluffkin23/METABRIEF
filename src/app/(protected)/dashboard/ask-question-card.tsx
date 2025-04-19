@@ -23,21 +23,32 @@ const AskQuestionCard = () => {
   const saveAnswer = api.project.saveAnswer.useMutation();
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    // Reset the answer state to an empty string
     setAnswer("");
+    // Reset the file references state to an empty array
     setFileReferences([]);
+    // Prevent the default form submission behavior
     e.preventDefault();
+    // If the project ID is missing, exit the function
     if (!project?.id) return;
+    // Set the loading state to true to indicate that the operation is in progress
     setLoading(true);
-
+    // Call the askQuestion function with the question and project ID
     const { output, fileReferences } = await askQuestion(question, project.id);
+    // Set the file references state with the file references returned from the askQuestion function
     setFileReferences(fileReferences);
+    // Open the dialog to display the answer
     setOpen(true);
 
+    // Iterate over the stream of data returned from the askQuestion function
     for await (const delta of readStreamableValue(output)) {
+      // If there is data in the stream
       if (delta) {
+        // Append the data to the answer state
         setAnswer((ans) => ans + delta);
       }
     }
+    // Set the loading state to false to indicate that the operation is complete
     setLoading(false);
   };
   return (
