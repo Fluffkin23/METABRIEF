@@ -3,49 +3,73 @@
 import React, { useState } from "react";
 import { Card } from "~/components/ui/card";
 import { useDropzone } from "react-dropzone";
-// import { uploadFile } from "~/lib/firebase";
 import { Presentation, Upload } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import { uploadFile } from "~/lib/minIO";
+import { api } from "~/trpc/react";
+import useProject from "~/hooks/use-project";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const MeetingCard = () => {
+  const { project } = useProject();
   const [progress, setProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const uploadMeeting = api.project.uploadMeeting.useMutation();
+  const router = useRouter();
+  // useDropzone hook for handling file drops
   const { getRootProps, getInputProps } = useDropzone({
-    accept: { "audio/*": [".mp3", ".wav", ".ogg", ".aac", ".m4a"]},
+    // Define accepted file types
+    accept: { "audio/*": [".mp3", ".wav", ".ogg", ".aac", ".m4a"] },
+    // Disable multiple file selection
     multiple: false,
-    // 100MB
+    // Set maximum file size to 100MB
     maxSize: 104857600,
-
+    // onDrop callback function, triggered when files are dropped
     onDrop: async (acceptedFiles) => {
-      setIsUploading(true);
+      // Check if a project is selected
+      if (!project) {
+        window.alert("No project selected.");
+        return;
+      }
+      // Get the first file from the accepted files
       const file = acceptedFiles[0];
-      let currentProgress = 0;
-      const maxSimulatedProgress = 90;
-
-      const interval = setInterval(() => {
-        currentProgress += 1.8 + Math.random();
-        if (currentProgress >= maxSimulatedProgress) {
-          clearInterval(interval);
-          return;
-        }
-        setProgress(Math.round(currentProgress));
-      }, 200); // ~10s to reach ~90%
+      // Check if a file was selected
+      if (!file) {
+        window.alert("No file selected.");
+        return;
+      }
+      // Set uploading state to true
+      setIsUploading(true);
+      // Reset progress to 0
+      setProgress(0);
       try {
-        // 🕓 Artificial delay to simulate 10s upload time
-        await new Promise((resolve) => setTimeout(resolve, 10000));
-        // Actual upload
-        const fileUrl = await uploadFile(file as File);
-        clearInterval(interval);
+        // Upload the file using uploadFile function
+        const downloadUrl = await uploadFile(file as File, setProgress); // assumes optional progress callback
+        // Mutate the uploadMeeting trpc mutation
+        uploadMeeting.mutate({
+          projectId: project.id,
+          meetingUrl: downloadUrl,
+          name: file.name,
+        }, {
+          onSuccess: () => {
+            toast.success("Meeting uploaded successfully.");
+            router.push('/meetings')
+          }
+        });
+        // Set progress to 100
         setProgress(100);
-        setTimeout(() => {window.alert(`File uploaded to: ${fileUrl}`);}, 100);
+        setTimeout(() => {
+          window.alert(`File uploaded to: ${downloadUrl}`);
+        }, 100);
       } catch (error) {
-        clearInterval(interval);
+        // Reset progress on error
         setProgress(0);
         window.alert("Upload failed.");
         console.error(error);
       }
+      // Set uploading state to false
       setIsUploading(false);
     }
   });
