@@ -96,5 +96,22 @@ export const projectRouter = createTRPCRouter({
                 createdAt: "desc"
             }
         })
+    }),
+  // Procedure to upload a meeting
+  uploadMeeting: protectedProcedure.input(z.object({ projectId: z.string(), meetingUrl: z.string(), name:z.string()})).
+  mutation(async({ctx, input}) => {
+    // Create a new meeting in the database
+    const meeting = await ctx.db.meeting.create({
+      data:{
+        meetingUrl: input.meetingUrl,
+        projectId: input.projectId,
+        name: input.name,
+        status: "PROCESSING"
+      }
     })
+  }),
+  // Procedure to retrieve meetings for a specific project based on project ID
+  getMeetings:protectedProcedure.input(z.object({projectId: z.string()})).query(async({ctx, input}) => {
+    return await ctx.db.meeting.findMany({ where:{ projectId: input.projectId} })
+  })
 });
