@@ -80,17 +80,38 @@ export const projectRouter = createTRPCRouter({
             }
         })
     }),
+    // Procedure to retrieve questions for a specific project based on project ID
     getQuestions: protectedProcedure.input(z.object({projectId: z.string()})).query(async({ctx, input}) =>{
+        // Fetch questions from the database based on the provided project ID
         return await ctx.db.question.findMany({
             where: {
                 projectId: input.projectId
             },
+            // Include user information with each question
             include: {
                 user: true
             },
+            // Order the questions by creation date in descending order
             orderBy: {
                 createdAt: "desc"
             }
         })
+    }),
+  // Procedure to upload a meeting
+  uploadMeeting: protectedProcedure.input(z.object({ projectId: z.string(), meetingUrl: z.string(), name:z.string()})).
+  mutation(async({ctx, input}) => {
+    // Create a new meeting in the database
+    const meeting = await ctx.db.meeting.create({
+      data:{
+        meetingUrl: input.meetingUrl,
+        projectId: input.projectId,
+        name: input.name,
+        status: "PROCESSING"
+      }
     })
+  }),
+  // Procedure to retrieve meetings for a specific project based on project ID
+  getMeetings:protectedProcedure.input(z.object({projectId: z.string()})).query(async({ctx, input}) => {
+    return await ctx.db.meeting.findMany({ where:{ projectId: input.projectId}, include: {issues:true} })
+  })
 });
