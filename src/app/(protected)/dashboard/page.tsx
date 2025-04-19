@@ -3,6 +3,7 @@ import useProject from "~/hooks/use-project";
 import { Github, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import CommitLog from "./commit-log";
+import AskQuestionCard from "~/app/(protected)/dashboard/ask-question-card";
 const Dashboard = () => {
   // Destructure the project object from the useProject hook
   const { project } = useProject();
@@ -39,7 +40,7 @@ const Dashboard = () => {
       {/* Container for the middle section of the dashboard */}
       <div className="mt-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
-            AskQuestionCard {/* Placeholder for the Ask Question card */}
+            <AskQuestionCard/> {/* Placeholder for the Ask Question card */}
             MeetingCard {/* Placeholder for the Meeting card */}
         </div>
       </div>

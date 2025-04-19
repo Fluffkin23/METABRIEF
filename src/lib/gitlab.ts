@@ -1,11 +1,11 @@
 import { Gitlab } from "@gitbeaker/node";
 import { db } from "~/server/db";
-import { aisummariseCommit } from "~/lib/gemini";
+import {aisummariseCommitOllama} from "~/lib/ollama";
 
 // Initialize GitLab client with a personal access token and custom base URL
 export const gitlab = new Gitlab({
   host: "https://gitlab.metaminds.com", // Custom GitLab domain
-  token: process.env.GITLAB_TOKEN,
+  token: process.env.GITLAB_TOKEN
 });
 
 type Response = {
@@ -35,38 +35,25 @@ function parseGitLabUrl(url: string): { namespace: string; project: string } {
 /**
  * Fetch the latest commit hashes from a GitLab repository.
  */
-export const getCommitHashes = async (
-  gitlabUrl: string,
-): Promise<Response[]> => {
+export const getCommitHashes = async (gitlabUrl: string,): Promise<Response[]> => {
   const { namespace, project } = parseGitLabUrl(gitlabUrl);
   console.log("Parsed Namespace:", namespace, "Parsed Project:", project);
-
   try {
     // Fetch commits (up to 100 per page) to allow sorting and slicing.
-    const rawCommits = await gitlab.Commits.all(`${namespace}/${project}`, {
-      perPage: 100,
-    });
+    const rawCommits = await gitlab.Commits.all(`${namespace}/${project}`, {perPage: 100});
     if (!rawCommits || rawCommits.length === 0) {
       console.log("No commits fetched.");
       return [];
     }
-
     // Sort commits by creation date (descending) and keep the latest ones.
-    return rawCommits
-      .sort(
-        (a: any, b: any) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      )
+    return rawCommits.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 5) // Keep only the latest 5 commits
-      .map(
-        (commit: any): Response => ({
+      .map((commit: any): Response => ({
           commitHash: commit.id as string,
           commitMessage: commit.message ?? "",
           commitAuthorName: commit.author_name ?? "",
-          commitAuthorAvatar: commit.author_email
-            ? `https://www.gravatar.com/avatar/${commit.author_email}?d=identicon`
-            : null,
-          commitDate: commit.created_at ?? "",
+          commitAuthorAvatar: commit.author_email ? `https://www.gravatar.com/avatar/${commit.author_email}?d=identicon` : null,
+          commitDate: commit.created_at ?? ""
         }),
       );
   } catch (error) {
@@ -88,7 +75,6 @@ export const pollCommitsGitlab = async (projectId: string) => {
       throw new Error(`No valid GitLab URL found for project: ${projectId}`);
     }
     console.log("GitLab URL for Project:", githubUrl);
-
     const commitHashes = await getCommitHashes(githubUrl);
     if (!commitHashes.length) {
       console.log(`No commits found for project: ${projectId}`);
@@ -98,19 +84,10 @@ export const pollCommitsGitlab = async (projectId: string) => {
       projectId,
       commitHashes,
     );
-
     // Generate commit summaries in parallel
-    const summaryResponses = await Promise.allSettled(
-      unprocessedCommits.map((commit) =>
-        summariesCommit(githubUrl, commit.commitHash),
-      ),
-    );
+    const summaryResponses = await Promise.allSettled(unprocessedCommits.map((commit) => summariesCommit(githubUrl, commit.commitHash)));
     console.log("Summary responses:", summaryResponses);
-
-    const summaries = summaryResponses.map((response) =>
-      response.status === "fulfilled" ? (response.value as string) : "",
-    );
-
+    const summaries = summaryResponses.map((response) => response.status === "fulfilled" ? (response.value as string) : "");
     // Create commit entries in the database
     const commits = await db.commit.createMany({
       data: summaries.map((summary, index) => {
@@ -127,7 +104,6 @@ export const pollCommitsGitlab = async (projectId: string) => {
         };
       }),
     });
-
     return commits;
   } catch (error) {
     console.error("Error in pollCommitsGitlab:", error);
@@ -141,10 +117,7 @@ export const pollCommitsGitlab = async (projectId: string) => {
 async function summariesCommit(gitlabUrl: string, commitHash: string) {
   const { namespace, project } = parseGitLabUrl(gitlabUrl);
   try {
-    const diffData = await gitlab.Commits.diff(
-      `${namespace}/${project}`,
-      commitHash,
-    );
+    const diffData = await gitlab.Commits.diff(`${namespace}/${project}`, commitHash);
     const unifiedDiff = diffData
       .map((fileDiff: any) => {
         const fileHeader =
@@ -155,12 +128,11 @@ async function summariesCommit(gitlabUrl: string, commitHash: string) {
         return `${fileHeader}\n${fileDiff.diff}`;
       })
       .join("\n");
-
     console.log(
       `Transformed unified diff for commit ${commitHash}:`,
       unifiedDiff,
     );
-    return (await aisummariseCommit(unifiedDiff)) || "";
+    return (await aisummariseCommitOllama(unifiedDiff)) || "";
   } catch (error) {
     console.error(`Error fetching diff for commit ${commitHash}:`, error);
     throw new Error(`Failed to fetch diff for commit ${commitHash}`);
@@ -185,19 +157,12 @@ async function fetchProjectGithubUrl(projectId: string) {
 /**
  * Filter out commits that have already been processed.
  */
-async function filterUnprocessedCommits(
-  projectId: string,
-  commitHashes: Response[],
-) {
+async function filterUnprocessedCommits(projectId: string, commitHashes: Response[]) {
   console.log("Fetching processed commits for project:", projectId);
   const processedCommits = await db.commit.findMany({
     where: { projectId },
     select: { commitHash: true },
   });
-  const processedCommitHashes = new Set(
-    processedCommits.map(({ commitHash }) => commitHash),
-  );
-  return commitHashes.filter(
-    (commit) => !processedCommitHashes.has(commit.commitHash),
-  );
+  const processedCommitHashes = new Set(processedCommits.map(({ commitHash }) => commitHash));
+  return commitHashes.filter((commit) => !processedCommitHashes.has(commit.commitHash),);
 }
