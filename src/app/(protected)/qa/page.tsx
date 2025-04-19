@@ -9,10 +9,14 @@ import MDEditor from "@uiw/react-md-editor";
 import {CodeReferences} from "~/app/(protected)/dashboard/code-references";
 
 const QAPage = () => {
-  const { projectId } = useProject();
-  const { data: questions } = api.project.getQuestions.useQuery({ projectId });
-  const [questionIndex, setQuestionIndex] = React.useState(0);
-  const question = questions?.[questionIndex];
+// Access the project ID using the useProject hook
+const { projectId } = useProject();
+// Fetch questions related to the project using the api.project.getQuestions.useQuery hook
+const { data: questions } = api.project.getQuestions.useQuery({ projectId });
+// Initialize the question index state variable to keep track of the currently selected question
+const [questionIndex, setQuestionIndex] = React.useState(0);
+// Get the current question based on the question index
+const question = questions?.[questionIndex];
 
   return (
     <Sheet>
