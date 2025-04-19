@@ -15,41 +15,37 @@ const MeetingCard = () => {
   const { getRootProps, getInputProps } = useDropzone({
     accept: { "audio/*": [".mp3", ".wav", ".ogg", ".aac", ".m4a"]},
     multiple: false,
-    maxSize: 104857600, // 100MB
-    onDrop: async (acceptedFiles) => {setIsUploading(true);
+    // 100MB
+    maxSize: 104857600,
+
+    onDrop: async (acceptedFiles) => {
+      setIsUploading(true);
       const file = acceptedFiles[0];
       let currentProgress = 0;
       const maxSimulatedProgress = 90;
 
       const interval = setInterval(() => {
-        currentProgress += 1.8 + Math.random(); // smooth simulated boost
+        currentProgress += 1.8 + Math.random();
         if (currentProgress >= maxSimulatedProgress) {
           clearInterval(interval);
           return;
         }
         setProgress(Math.round(currentProgress));
       }, 200); // ~10s to reach ~90%
-
       try {
         // 🕓 Artificial delay to simulate 10s upload time
         await new Promise((resolve) => setTimeout(resolve, 10000));
-
         // Actual upload
         const fileUrl = await uploadFile(file as File);
-
         clearInterval(interval);
         setProgress(100);
-
-        setTimeout(() => {
-          window.alert(`File uploaded to: ${fileUrl}`);
-        }, 100);
+        setTimeout(() => {window.alert(`File uploaded to: ${fileUrl}`);}, 100);
       } catch (error) {
         clearInterval(interval);
         setProgress(0);
         window.alert("Upload failed.");
         console.error(error);
       }
-
       setIsUploading(false);
     }
   });
