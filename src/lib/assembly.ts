@@ -16,32 +16,62 @@ function msToTime(ms: number) {
     return `${minutes.toString().padStart(2,"0")}: ${remainderSeconds.toString().padStart(2,"0")}`;
 }
 
-// Function to process a meeting given its audio URL and return a summary
-export const processMeeting = async(meetingUrl: string) => {
-  // Transcribe the audio from the meeting URL using AssemblyAI
+export const processMeeting = async (meetingUrl: string) => {
+  console.log("🔍 [Step 1] Downloading audio with ngrok header...");
+
+  const res = await fetch(meetingUrl, {
+    headers: {
+      "ngrok-skip-browser-warning": "true", // 👈 this bypasses the interstitial
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`❌ Failed to download file: ${res.status} ${res.statusText}`);
+  }
+
+  const contentType = res.headers.get("content-type");
+  if (!contentType?.startsWith("audio/")) {
+    throw new Error(`❌ Invalid content type: ${contentType}`);
+  }
+
+  const buffer = await res.arrayBuffer();
+
+  console.log("📤 [Step 2] Uploading to AssemblyAI...");
+
+  const uploadRes = await client.files.upload(buffer);
+
+  console.log("📄 Upload URL:", uploadRes);
+
   const transcript = await client.transcripts.transcribe({
-    audio: meetingUrl,
-    auto_chapters: true
-  })
+    audio: uploadRes,
+    auto_chapters: true,
+  });
 
-  // Map over the chapters in the transcript to create summaries with formatted start and end times
-  const summaries = transcript.chapters?.map(chapter => ({
-    // Format the start time of the chapter
-    start : msToTime(chapter.start),
-    // Format the end time of the chapter
-    end : msToTime(chapter.end),
-    gist: chapter.gist,
-    headline: chapter.headline,
-    summary: chapter.summary
-  })) || []
-  // Throw an error if no text is found in the transcript
-  if(!transcript.text) throw new Error("No text found in transcript");
+  console.log("🧾 [Step 3] Transcript received:", transcript.status);
 
-  // Return the summaries
-  return { summaries }
-}
+  if (transcript.status === "error") {
+    console.error("❌ Transcription error:", transcript.error);
+    throw new Error(`Transcription failed: ${transcript.error}`);
+  }
 
-// const FILE_URL = "https://assembly.ai/sports_injuries.mp3";
-// const response = await processMeeting(FILE_URL);
-//
-// console.log(response)
+  if (!transcript.text) {
+    throw new Error("❌ No text found in transcript.");
+  }
+
+  const summaries =
+    transcript.chapters?.map((chapter) => ({
+      start: msToTime(chapter.start),
+      end: msToTime(chapter.end),
+      gist: chapter.gist,
+      headline: chapter.headline,
+      summary: chapter.summary,
+    })) || [];
+
+  console.log("✅ Done. Returning summaries.");
+  return { summaries };
+};
+
+const FILE_URL = "https://honestly-helped-fly.ngrok-free.app/meetings/1745157818172-4-25-2024.m4a";
+const response = await processMeeting(FILE_URL);
+
+console.log(response)
