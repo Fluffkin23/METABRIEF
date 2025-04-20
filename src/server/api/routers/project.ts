@@ -114,5 +114,10 @@ export const projectRouter = createTRPCRouter({
   // Procedure to retrieve meetings for a specific project based on project ID
   getMeetings:protectedProcedure.input(z.object({projectId: z.string()})).query(async({ctx, input}) => {
     return await ctx.db.meeting.findMany({ where:{ projectId: input.projectId}, include: {issues:true} })
-  })
+  }),
+  // Procedure to delete a meeting by its ID
+  deleteMeeting: protectedProcedure.input(z.object({ meetingId: z.string() })).mutation(async ({ ctx, input }) => {
+    // Delete the meeting from the database
+    return await ctx.db.meeting.delete({ where: { id: input.meetingId }, });
+  }),
 });

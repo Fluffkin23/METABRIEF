@@ -71,7 +71,7 @@ export const processMeeting = async (meetingUrl: string) => {
   return { summaries };
 };
 
-const FILE_URL = "https://honestly-helped-fly.ngrok-free.app/meetings/1745157818172-4-25-2024.m4a";
-const response = await processMeeting(FILE_URL);
-
-console.log(response)
+// const FILE_URL = "https://honestly-helped-fly.ngrok-free.app/meetings/1745157818172-4-25-2024.m4a";
+// const response = await processMeeting(FILE_URL);
+//
+// console.log(response)

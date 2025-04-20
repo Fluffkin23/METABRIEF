@@ -6,12 +6,19 @@ import MeetingCard from "~/app/(protected)/dashboard/meeting-card";
 import Link from "next/link";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { toast } from "sonner";
+import useRefetch from "~/hooks/use-refetch";
 
 const MeetingsPage = () => {
-  const {projectId} = useProject();
-  const {data: meetings, isLoading} = api.project.getMeetings.useQuery({projectId}, {
-    refetchInterval: 4000
-  });
+// Get the project ID using the useProject hook
+const {projectId} = useProject();
+// Fetch meetings data for the current project, with a refetch interval of 4 seconds
+const {data: meetings, isLoading} = api.project.getMeetings.useQuery({projectId}, { refetchInterval: 4000 });
+// Initialize the deleteMeeting mutation
+const deleteMeeting = api.project.deleteMeeting.useMutation();
+// Initialize the refetch function
+const  refetch = useRefetch();
+
   return (
    <>
     <MeetingCard />
@@ -36,8 +43,14 @@ const MeetingsPage = () => {
            </div>
            <div className="flex items-center flex-none gap-x-4">
              <Link href={`/meetings/${meeting.id}`}>
-               <Button variant = "outline">View Meeting</Button>
+               <Button size="sm" variant = "outline">View Meeting</Button>
              </Link>
+             <Button disabled={deleteMeeting.isPending} size="sm" variant="destructive" onClick={() => deleteMeeting.mutate({meetingId: meeting.id}, {
+               onSuccess: () => {
+                 toast.success("Meeting deleted successfully")
+                 refetch();
+               }
+             })}>Delete Meeting</Button>
            </div>
          </li>
        ))}
