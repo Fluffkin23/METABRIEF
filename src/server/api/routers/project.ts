@@ -109,6 +109,7 @@ export const projectRouter = createTRPCRouter({
         status: "PROCESSING"
       }
     })
+    return meeting
   }),
   // Procedure to retrieve meetings for a specific project based on project ID
   getMeetings:protectedProcedure.input(z.object({projectId: z.string()})).query(async({ctx, input}) => {
