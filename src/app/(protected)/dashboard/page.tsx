@@ -7,6 +7,7 @@ import AskQuestionCard from "~/app/(protected)/dashboard/ask-question-card";
 import MeetingCard from "~/app/(protected)/dashboard/meeting-card";
 import ArchiveButton from "./archieve-button";
 import InviteButton from "./invite-button";
+import TeamMembers from "~/app/(protected)/dashboard/team-members";
 const Dashboard = () => {
   // Destructure the project object from the useProject hook
   const { project } = useProject();
@@ -36,7 +37,7 @@ const Dashboard = () => {
         <div className="h-4"></div>
         {/* Placeholder for team members, invite button, and archive button */}
         <div className="flex items-center gap-4">
-          TeamMembers
+          <TeamMembers /> {/* Placeholder for team members */}
           <InviteButton />
           <ArchiveButton />
         </div>
