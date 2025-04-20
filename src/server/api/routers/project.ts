@@ -120,4 +120,8 @@ export const projectRouter = createTRPCRouter({
     // Delete the meeting from the database
     return await ctx.db.meeting.delete({ where: { id: input.meetingId }, });
   }),
+  // Procedure to retrieve a meeting by its ID
+  getMeetingById: protectedProcedure.input(z.object({ meetingId: z.string() })).query(async ({ ctx, input }) => {
+      return await ctx.db.meeting.findUnique({ where: { id: input.meetingId }, include: { issues: true } });
+    })
 });
