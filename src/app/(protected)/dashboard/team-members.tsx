@@ -9,7 +9,7 @@ const TeamMembers = () => {
   return(
     <div className="flex items-center gap-2">
       {members?.map(member => (
-        <img key = {member.id} src={member.user.imageUrl || ""} alt={member.user.firstName || ""} title={member.user.firstName || ""} className="rounded-full" height={30} width={30}/>))}
+        <img key = {member.id} src={member.user.imageUrl || ""} alt={member.user.firstName || ""} title={member.user.emailAddress || ""} className="rounded-full" height={30} width={30}/>))}
     </div>
   )
 
