@@ -30,8 +30,9 @@ export async function uploadFile(file: File, setProgress?: (progress: number) =>
 
     // Send the command to MinIO
     await s3.send(command);
+    const publicBaseUrl = process.env.NEXT_PUBLIC_MINIO_PUBLIC_URL || "http://localhost:9000";
     // Return the URL of the uploaded file
-    return `http://localhost:9000/${bucketName}/${fileName}`as string;
+    return `${publicBaseUrl}/${bucketName}/${fileName}`;
   } catch (error) {
     // Log and throw any errors
     console.error("Error uploading file:", error);
