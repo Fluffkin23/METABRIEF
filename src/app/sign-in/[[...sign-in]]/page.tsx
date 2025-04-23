@@ -9,7 +9,7 @@ export default function SignInPage() {
   return (
     <div className="grid min-h-screen w-full place-items-center bg-white px-4">
       <SignIn.Root>
-        <SignIn.Step name="start" className="w-full space-y-6 rounded-2xl px-4 py-10 sm:w-96 sm:px-8">
+        <SignIn.Step name="start" className="w-full space-y-6 rounded-2xl bg-white px-4 py-10 shadow-md ring-1 ring-black/5 sm:w-96 sm:px-8">
           <header className="text-center">
             <img src="/logo.png" alt="Your logo" className="mx-auto size-10"/>
             <h1 className="mt-4 text-xl font-medium tracking-tight text-neutral-950">Sign in to MetaBrief</h1>
