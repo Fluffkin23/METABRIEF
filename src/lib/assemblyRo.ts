@@ -172,7 +172,7 @@ ${englishText}
 }
 
 // Main Process Function
-export const processMeeting = async (meetingUrl: string) => {
+export const processMeetingRo = async (meetingUrl: string) => {
   const romanianText = await transcribeRomanianAudio(meetingUrl);
 
   const englishText = await translateWithGemma(romanianText);
@@ -183,11 +183,11 @@ export const processMeeting = async (meetingUrl: string) => {
   return { summaries };
 };
 
-const FILE_URL = "https://honestly-helped-fly.ngrok-free.app/metabrief/1745745929314-testRoamana.mp3";
+// const FILE_URL = "https://honestly-helped-fly.ngrok-free.app/metabrief/1745745929314-testRoamana.mp3";
+// //
+// // const response = await processMeeting(FILE_URL);
+// //
+// // console.log(JSON.stringify(response, null, 2));
 //
-// const response = await processMeeting(FILE_URL);
-//
+// const response = await transcribeRomanianAudio(FILE_URL);
 // console.log(JSON.stringify(response, null, 2));
-
-const response = await transcribeRomanianAudio(FILE_URL);
-console.log(JSON.stringify(response, null, 2));
