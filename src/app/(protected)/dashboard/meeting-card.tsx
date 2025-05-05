@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react"; // 👈 no need to import useState now
 import { Card } from "~/components/ui/card";
 import { useDropzone } from "react-dropzone";
 import { Presentation, Upload } from "lucide-react";
@@ -13,58 +13,52 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "~/components/ui/select";
 
-const MeetingCard = () => {
+// 👇 Accept props
+const MeetingCard = ({ processingLanguage, setProcessingLanguage, }: { processingLanguage: "en" | "ro" | null; setProcessingLanguage: (lang: "en" | "ro") => void; }) => {
   const { project } = useProject();
   const processMeeting = useMutation({
     mutationFn: async (data: {
       meetingUrl: string;
       meetingId: string;
       projectId: string;
+      processingLanguage: "en" | "ro";
     }) => {
       const { meetingUrl, meetingId, projectId } = data;
-      const response = await axios.post("/api/process-meeting", {
-        meetingUrl,
-        meetingId,
-        projectId,
-      });
+      const response = await axios.post("/api/process-meeting", { meetingUrl, meetingId, projectId, processingLanguage });
       return response.data;
     },
   });
-  const [progress, setProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
+
+  const [progress, setProgress] = React.useState(0);
+  const [isUploading, setIsUploading] = React.useState(false);
   const uploadMeeting = api.project.uploadMeeting.useMutation();
   const router = useRouter();
-  // useDropzone hook for handling file drops
+
   const { getRootProps, getInputProps } = useDropzone({
-    // Define accepted file types
     accept: { "audio/*": [".mp3", ".wav", ".ogg", ".aac", ".m4a"] },
-    // Disable multiple file selection
     multiple: false,
-    // Set maximum file size to 100MB
     maxSize: 104857600,
-    // onDrop callback function, triggered when files are dropped
     onDrop: async (acceptedFiles) => {
-      // Check if a project is selected
       if (!project) {
-        window.alert("No project selected.");
+        toast.error("No project selected.");
         return;
       }
-      // Get the first file from the accepted files
+      if (!processingLanguage) {
+        toast.error("❌ Please select a processing mode first!");
+        return;
+      }
       const file = acceptedFiles[0];
-      // Check if a file was selected
       if (!file) {
-        window.alert("No file selected.");
+        toast.error("No file selected.");
         return;
       }
-      // Set uploading state to true
+
       setIsUploading(true);
-      // Reset progress to 0
       setProgress(0);
       try {
-        // Upload the file using uploadFile function
-        const downloadUrl = await uploadFile(file as File, setProgress); // assumes optional progress callback
-        // Mutate the uploadMeeting trpc mutation
+        const downloadUrl = await uploadFile(file as File, setProgress);
         uploadMeeting.mutate({
           projectId: project.id,
           meetingUrl: downloadUrl,
@@ -72,49 +66,74 @@ const MeetingCard = () => {
         }, {
           onSuccess: (meeting) => {
             toast.success("Meeting uploaded successfully.");
-            router.push('/meetings')
-            processMeeting.mutateAsync({ meetingUrl: downloadUrl, meetingId: meeting.id, projectId: project.id })
+            router.push('/meetings');
+            processMeeting.mutateAsync({ meetingUrl: downloadUrl, meetingId: meeting.id, projectId: project.id, processingLanguage });
           }
         });
-        // Set progress to 100
         setProgress(100);
         setTimeout(() => {
-          window.alert(`File uploaded to: ${downloadUrl}`);
+          toast.success(`File uploaded to: ${downloadUrl}`);
         }, 100);
       } catch (error) {
-        // Reset progress on error
         setProgress(0);
-        window.alert("Upload failed.");
+        toast.error("Upload failed.");
         console.error(error);
       }
-      // Set uploading state to false
       setIsUploading(false);
-    }
+    },
   });
+
   return (
-    <Card className="col-span-2 flex flex-col items-center justify-center p-10"{...getRootProps()}>
+    <Card className="col-span-2 flex flex-col items-center justify-center p-10" {...getRootProps()}>
+      <Select
+        onValueChange={(value) => {
+          setProcessingLanguage(value as "en" | "ro");
+          if (value === "en") {
+            toast.success("Processing in English selected!");
+          } else if (value === "ro") {
+            toast.success("Processing in Romanian selected!");
+          }
+        }}
+      >
+        <SelectTrigger className="w-[200px]">
+          {processingLanguage ? `Selected: ${processingLanguage === "en" ? "English" : "Romanian"}` : "Select Processing Mode"}
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="en">Process in English</SelectItem>
+          <SelectItem value="ro">Process in Romanian</SelectItem>
+        </SelectContent>
+      </Select>
+
       {!isUploading && (
         <>
           <Presentation className="h-10 w-10 animate-bounce" />
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">{" "} Create a new meeting </h3>
-          <p className="mt-1 text-center text-sm text-gray-500">Analyse your meeting with METABRIEF <br />Powered by AI.</p>
+          <h3 className="mt-2 text-sm font-semibold text-gray-900">Create a new meeting</h3>
+          <p className="mt-1 text-center text-sm text-gray-500">
+            Analyse your meeting with METABRIEF <br />
+            Powered by AI.
+          </p>
           <div className="mt-6">
-            <Button disabled={isUploading}>
-              <Upload className="mr-1.5 -ml-0.5 h-5 w-5" aria-hidden="true" /> Upload Meeting
-              <input className="hideene" {...getInputProps()} />
+            <Button disabled={!processingLanguage || isUploading}>
+              <Upload className="mr-1.5 -ml-0.5 h-5 w-5" aria-hidden="true" />
+              Upload Meeting
+              <input className="hidden" {...getInputProps()} />
             </Button>
           </div>
         </>
       )}
+
       {isUploading && (
         <div>
-          <CircularProgressbar value={progress} text={`${progress}%`} className="size-20" styles = {
-            buildStyles({
-              pathColor : "#4f46e5",
-              textColor : "#4f46e5",
-            })
-          }/>
-          <p className="text-center text-sm text-gray-500">{" "} Uploading your meeting...</p>
+          <CircularProgressbar
+            value={progress}
+            text={`${progress}%`}
+            className="size-20"
+            styles={buildStyles({
+              pathColor: "#4f46e5",
+              textColor: "#4f46e5",
+            })}
+          />
+          <p className="text-center text-sm text-gray-500">Uploading your meeting...</p>
         </div>
       )}
     </Card>

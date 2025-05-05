@@ -18,7 +18,7 @@ export async function uploadFile(file: File, setProgress?: (progress: number) =>
     // Convert the file to an ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
     // Define the bucket name and file name
-    const bucketName = 'meetings';
+    const bucketName = 'metabrief';
     const fileName = `${Date.now()}-${file.name}`;
     // Create a PutObjectCommand to upload the file
     const command = new PutObjectCommand({

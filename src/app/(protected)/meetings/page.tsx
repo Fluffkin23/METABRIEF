@@ -8,6 +8,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { toast } from "sonner";
 import useRefetch from "~/hooks/use-refetch";
+import { useState } from "react";
 
 const MeetingsPage = () => {
 // Get the project ID using the useProject hook
@@ -18,10 +19,12 @@ const {data: meetings, isLoading} = api.project.getMeetings.useQuery({projectId}
 const deleteMeeting = api.project.deleteMeeting.useMutation();
 // Initialize the refetch function
 const  refetch = useRefetch();
+const [processingLanguage, setProcessingLanguage] = useState<"en" | "ro" | null>(null); // 👈 ADD THIS
+
 
   return (
    <>
-    <MeetingCard />
+    <MeetingCard  processingLanguage={processingLanguage} setProcessingLanguage={setProcessingLanguage} />
      <div className="h-6"></div>
      <h1 className="text-xl font-semibold">Meetings</h1>
      {meetings && meetings.length === 0 && <div> No meetings founds</div>}
