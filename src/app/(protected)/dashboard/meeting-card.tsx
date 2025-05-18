@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react"; // 👈 no need to import useState now
+import React from "react";
 import { Card } from "~/components/ui/card";
 import { useDropzone } from "react-dropzone";
 import { Presentation, Upload } from "lucide-react";
@@ -15,7 +15,6 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "~/components/ui/select";
 
-// 👇 Accept props
 const MeetingCard = ({ processingLanguage, setProcessingLanguage, }: { processingLanguage: "en" | "ro" | null; setProcessingLanguage: (lang: "en" | "ro") => void; }) => {
   const { project } = useProject();
   const processMeeting = useMutation({

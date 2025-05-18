@@ -8,9 +8,12 @@ import MeetingCard from "~/app/(protected)/dashboard/meeting-card";
 import ArchiveButton from "./archieve-button";
 import InviteButton from "./invite-button";
 import TeamMembers from "~/app/(protected)/dashboard/team-members";
+import React from "react";
 const Dashboard = () => {
   // Destructure the project object from the useProject hook
   const { project } = useProject();
+  const [processingLanguage, setProcessingLanguage] = React.useState<"en" | "ro" | null>(null);
+
   return (
     <div>
       {/* Container for the top section of the dashboard */}
@@ -35,23 +38,19 @@ const Dashboard = () => {
           </div>
         </div>
         <div className="h-4"></div>
-        {/* Placeholder for team members, invite button, and archive button */}
         <div className="flex items-center gap-4">
-          <TeamMembers /> {/* Placeholder for team members */}
+          <TeamMembers />
           <InviteButton />
           <ArchiveButton />
         </div>
       </div>
-      {/* Container for the middle section of the dashboard */}
       <div className="mt-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
-            <AskQuestionCard/> {/* Placeholder for the Ask Question card */}
-            <MeetingCard/> {/* Placeholder for the Meeting card */}
+            <AskQuestionCard/>
+            <MeetingCard  processingLanguage={processingLanguage} setProcessingLanguage={setProcessingLanguage}/>
         </div>
       </div>
-      {/* Container for the bottom section of the dashboard */}
       <div className="mt-8">
-        {/* CommitLog Placeholder for the commit log */}
         <CommitLog />
       </div>
     </div>
