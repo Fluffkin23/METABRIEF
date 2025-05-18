@@ -2,10 +2,15 @@ import Link from "next/link";
 
 import { api, HydrateClient } from "~/trpc/server";
 import SignInPage from "./sign-in/[[...sign-in]]/page";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
   const hello = await api.post.hello({ text: "from tRPC" });
-
+  const { userId } = await auth();
+  if (userId) {
+    return redirect("/dashboard");
+  }
 
   return (
     <HydrateClient>
