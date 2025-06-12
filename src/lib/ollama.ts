@@ -5,7 +5,7 @@ import { Document } from "langchain/document";
 export const aisummariseCommitOllama = async (diff: string) => {
   // Constructing the prompt for the API request
   const prompt = `
-You are an expert programmer, and you are trying to summarize a git diff.
+You are an expert programmer, and you are trying to summarize a git diff in no more than 100 words.
 Reminders about the git diff format:
 For every file, there are a few metadata lines, like (for example):
 \`\`\`

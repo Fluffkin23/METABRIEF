@@ -7,7 +7,7 @@ const s3 = new S3Client({
   endpoint: "http://localhost:9000",
   credentials: {
     accessKeyId:"minioadmin",
-    secretAccessKey:"minioadmin"
+    secretAccessKey:"minioadmin123"
   },
   forcePathStyle: true,
 });
